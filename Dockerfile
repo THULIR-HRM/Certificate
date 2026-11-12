@@ -20,6 +20,10 @@ COPY . .
 # Run collectstatic during build
 RUN python manage.py collectstatic --noinput
 
+# Replace /usr/local/bin/gunicorn with wrapper to safely expand $PORT from any source
+RUN chmod +x /app/gunicorn_wrapper.py && \
+    cp /app/gunicorn_wrapper.py /usr/local/bin/gunicorn
+
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py seed_defaults && python manage.py import_college_directory && (python manage.py bootstrap_admin || true) && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"]
+CMD ["python", "/app/gunicorn_wrapper.py", "config.wsgi:application"]
