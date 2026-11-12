@@ -1,5 +1,8 @@
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.13"
+
 [phases.setup]
-nixPkgs = ["python313", "libmupdf"]
+nixPkgs = ["mupdf"]
 
 [phases.install]
 cmds = ["pip install -r requirements.txt"]

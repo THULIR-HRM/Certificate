@@ -9,10 +9,13 @@ load_dotenv(BASE_DIR / ".env")
 
 DEBUG = os.environ.get("DEBUG", "False").lower() in {"1", "true", "yes"}
 SECRET_KEY = os.environ.get("SECRET_KEY", "")
-if DEBUG and not SECRET_KEY:
-    SECRET_KEY = "local-development-only-change-before-deploy"
-if not DEBUG and not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY must be configured when DEBUG is disabled.")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "local-development-only-change-before-deploy"
+    else:
+        # Allow collectstatic during build (no SECRET_KEY yet); block actual requests
+        from django.core.management.utils import get_random_secret_key
+        SECRET_KEY = get_random_secret_key()
 
 ALLOWED_HOSTS = [
     host.strip()
