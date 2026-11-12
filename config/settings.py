@@ -19,11 +19,19 @@ ALLOWED_HOSTS = [
     for host in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
     if host.strip()
 ]
+# Allow Railway's auto-generated *.up.railway.app domains automatically
+_railway_host = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
+if _railway_host and _railway_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_railway_host)
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+if _railway_host:
+    _railway_origin = f"https://{_railway_host}"
+    if _railway_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_railway_origin)
 
 INSTALLED_APPS = [
     "django.contrib.auth",
@@ -36,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -110,6 +119,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", str(BASE_DIR / "media"))).resolve()
 TEMPLATE_SOURCE_DIR = Path(
     os.environ.get("TEMPLATE_SOURCE_DIR") or str(BASE_DIR / "Certifiactes Template")
