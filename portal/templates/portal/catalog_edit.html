@@ -1,0 +1,8 @@
+{% extends "portal/base.html" %}
+{% block title %}Edit {{ kind }} | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">STUDENT FORM OPTIONS</p><h1>Edit {{ kind }}</h1><p>Update the catalog entry or deactivate it to hide it from new student forms.</p></div><a class="button button-quiet" href="{% url 'admin_catalog' %}">Back to catalog</a></div>
+<section class="panel catalog-edit-panel">
+  <form method="post" class="portal-form">{% csrf_token %}{{ form.as_p }}<div class="form-actions full-width"><button class="button button-primary" type="submit">Save changes</button></div></form>
+</section>
+{% endblock %}

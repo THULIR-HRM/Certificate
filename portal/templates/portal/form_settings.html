@@ -1,0 +1,17 @@
+{% extends "portal/base.html" %}
+{% block title %}Form settings | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">DYNAMIC FORMS</p><h1>Form settings</h1><p>Update field labels, placeholders, ordering, and safe validation settings.</p></div><a class="button button-primary" href="{% url 'admin_custom_field_add' %}">Add custom field</a></div>
+<section class="panel">
+  <div class="section-heading"><div><h2>Standard fields</h2><p>System-required fields cannot be disabled or made optional.</p></div></div>
+  <div class="table-wrap"><table><thead><tr><th>Form</th><th>Field</th><th>Label</th><th>Required</th><th>Enabled</th><th></th></tr></thead><tbody>
+    {% for item in form_fields %}<tr><td>{{ item.get_form_type_display }}</td><td><span class="mono">{{ item.key }}</span></td><td>{{ item.label }}</td><td>{{ item.required|yesno:"Yes,No" }}</td><td>{{ item.enabled|yesno:"Yes,No" }}</td><td><a href="{% url 'admin_form_field_edit' item.id %}">Configure</a></td></tr>{% empty %}<tr><td colspan="6" class="empty-state">Run the default setup command to initialize form fields.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+<section class="panel">
+  <div class="section-heading"><div><h2>Custom fields</h2><p>Student-entered values are stored with their submission.</p></div></div>
+  <div class="table-wrap"><table><thead><tr><th>Form</th><th>Field key</th><th>Label</th><th>Required</th><th>Enabled</th><th></th></tr></thead><tbody>
+    {% for item in custom_fields %}<tr><td>{{ item.get_form_type_display }}</td><td><span class="mono">{{ item.key }}</span></td><td>{{ item.label }}</td><td>{{ item.required|yesno:"Yes,No" }}</td><td>{{ item.enabled|yesno:"Yes,No" }}</td><td><form method="post" action="{% url 'admin_custom_field_delete' item.id %}">{% csrf_token %}<button class="text-button danger-text" type="submit" data-confirm="Remove this custom field? Existing student data will remain.">Remove</button></form></td></tr>{% empty %}<tr><td colspan="6" class="empty-state">No custom fields have been added.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "portal/base.html" %}
+{% block title %}Certificate Portal | GT Certify{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">GT CERTIFY · STUDENT SERVICES</p>
+  <h1>Certificate requests,<br><span>made simple.</span></h1>
+  <p class="hero-copy">Submit your information once. The Gradtwin Administration Team will review each certificate request before generation.</p>
+  <div class="registration-cards">
+    <article class="public-card">
+      <div class="card-icon">01</div>
+      <h2>Offer Letter</h2>
+      <p>Register the student information required for an Offer Letter.</p>
+      <a class="button button-primary" href="{% url 'register_offer' %}">Open Offer Letter form</a>
+    </article>
+    <article class="public-card">
+      <div class="card-icon">02</div>
+      <h2>Internship certificates</h2>
+      <p>Submit once for Experience, Project Completion, and Letter of Recommendation requests.</p>
+      <a class="button button-primary" href="{% url 'register_internship' %}">Open registration form</a>
+    </article>
+  </div>
+  <p class="privacy-note">Your submission is shared only with the Gradtwin administrator for certificate processing.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "portal/base.html" %}
+{% block title %}Generated certificates | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SECURE ARCHIVE</p><h1>{% if category_label %}{{ category_label }} backups{% else %}Generated certificates / backup{% endif %}</h1><p>Every generated file is retained as a versioned backup.</p></div></div>
+<section class="panel filter-panel">
+  <form method="get" class="filter-form backup-filters">
+    <div class="field"><label for="q">Student or registration number</label><input id="q" name="q" value="{{ filters.q }}" placeholder="Search archive"></div>
+    <div class="field"><label for="mode">Certificate type</label><select id="mode" name="mode"><option value="">Online and offline</option><option value="online" {% if filters.mode == "online" %}selected{% endif %}>Online</option><option value="offline" {% if filters.mode == "offline" %}selected{% endif %}>Offline</option></select></div>
+    <div class="field"><label for="format">File format</label><select id="format" name="format"><option value="">Word and PDF</option><option value="docx" {% if filters.format == "docx" %}selected{% endif %}>Word</option><option value="pdf" {% if filters.format == "pdf" %}selected{% endif %}>PDF</option></select></div>
+    <button class="button button-primary" type="submit">Apply filters</button>
+  </form>
+</section>
+<section class="panel">
+  <div class="table-wrap"><table><thead><tr><th>Certificate ID</th><th>Student</th><th>Registration number</th><th>Category</th><th>Type / format</th><th>Generated</th><th>Downloaded</th><th>File</th><th></th></tr></thead>
+    <tbody>{% for certificate in page_obj %}
+      <tr>
+        <td><span class="mono">CERT-{{ certificate.id }}</span></td>
+        <td><strong>{{ certificate.request.submission.title }} {{ certificate.request.submission.name }}</strong><small class="table-subtext">{{ certificate.request.submission.domain.name }}</small></td>
+        <td>{{ certificate.request.submission.registration_number }}</td>
+        <td>{{ certificate.request.get_category_display }}</td>
+        <td>{{ certificate.get_mode_display }} · {{ certificate.get_file_format_display }}</td>
+        <td>{{ certificate.generated_at|date:"d M Y, H:i" }}</td>
+        <td>{% if certificate.downloaded_at %}{{ certificate.downloaded_at|date:"d M Y, H:i" }}{% else %}<span class="muted">Not yet</span>{% endif %}</td>
+        <td class="file-name">{{ certificate.display_filename }}</td>
+        <td><a class="table-action" href="{% url 'admin_certificate_download' certificate.id %}">Download</a></td>
+      </tr>
+    {% empty %}<tr><td colspan="9" class="empty-state">No generated files match these filters.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

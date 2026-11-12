@@ -1,0 +1,40 @@
+{% extends "portal/base.html" %}
+{% block title %}Academic catalog | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">STUDENT FORM OPTIONS</p><h1>Academic catalog</h1><p>Manage degrees, aliases, specializations, and the college directory. Choose an Other option on student forms when a value is not listed.</p></div></div>
+<div class="catalog-page">
+<div class="catalog-admin-grid">
+  <section class="panel"><div class="section-heading"><div><h2>Add degree</h2><p>Aliases are search terms for the same standard degree.</p></div></div>
+    <form method="post" class="portal-form">{% csrf_token %}<input type="hidden" name="kind" value="degree">{{ forms_by_kind.degree.as_p }}<button class="button button-primary" type="submit">Add degree</button></form>
+  </section>
+  <section class="panel"><div class="section-heading"><div><h2>Add specialization</h2><p>Specializations are associated with one degree.</p></div></div>
+    <form method="post" class="portal-form">{% csrf_token %}<input type="hidden" name="kind" value="specialization">{{ forms_by_kind.specialization.as_p }}<button class="button button-primary" type="submit">Add specialization</button></form>
+  </section>
+  <section class="panel"><div class="section-heading"><div><h2>Add district</h2><p>Districts are used to filter college listings.</p></div></div>
+    <form method="post" class="portal-form">{% csrf_token %}<input type="hidden" name="kind" value="district">{{ forms_by_kind.district.as_p }}<button class="button button-primary" type="submit">Add district</button></form>
+  </section>
+  <section class="panel"><div class="section-heading"><div><h2>Add category</h2><p>Categories are used to filter college listings.</p></div></div>
+    <form method="post" class="portal-form">{% csrf_token %}<input type="hidden" name="kind" value="category">{{ forms_by_kind.category.as_p }}<button class="button button-primary" type="submit">Add category</button></form>
+  </section>
+  <section class="panel"><div class="section-heading"><div><h2>Add college</h2><p>Add a directory item with its location and source where available.</p></div></div>
+    <form method="post" class="portal-form">{% csrf_token %}<input type="hidden" name="kind" value="college">{{ forms_by_kind.college.as_p }}<button class="button button-primary" type="submit">Add college</button></form>
+  </section>
+</div>
+<section class="panel">
+  <div class="section-heading"><div><h2>Degrees and specializations</h2><p>Inactive entries remain in existing submissions but are hidden from new student forms.</p></div></div>
+  <div class="table-wrap"><table><thead><tr><th>Degree</th><th>Search aliases</th><th>Specializations</th><th>Status</th><th></th></tr></thead><tbody>
+    {% for item in degrees %}<tr><td>{{ item.abbreviation }} - {{ item.full_name }}</td><td>{{ item.aliases|join:", "|default:"—" }}</td><td>{% for specialization in item.specializations.all %}{{ specialization.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td><td>{{ item.active|yesno:"Active,Inactive" }}</td><td><a href="{% url 'admin_catalog_edit' 'degree' item.id %}">Edit</a></td></tr>{% empty %}<tr><td colspan="5" class="empty-state">No degrees configured.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+<section class="panel">
+  <div class="section-heading"><div><h2>College directory</h2><p>Directory entries are administered locally; an active source URL is retained with each record.</p></div></div>
+  <div class="table-wrap"><table><thead><tr><th>College</th><th>State</th><th>District</th><th>Category</th><th>Affiliation</th><th>Status</th><th></th></tr></thead><tbody>
+    {% for item in colleges %}<tr><td>{{ item.name }}<small>{{ item.location }}{% if item.aliases %} · Search names: {{ item.aliases|join:", " }}{% endif %}{% if item.source_url %} · <a href="{{ item.source_url }}" rel="noreferrer">Source</a>{% endif %}</small></td><td>{{ item.state }}</td><td>{{ item.district.name }}</td><td>{{ item.category.name }}</td><td>{{ item.affiliation|default:"—" }}</td><td>{{ item.active|yesno:"Active,Inactive" }}</td><td><a href="{% url 'admin_catalog_edit' 'college' item.id %}">Edit</a></td></tr>{% empty %}<tr><td colspan="7" class="empty-state">No college entries configured.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+<section class="panel">
+  <div class="section-heading"><div><h2>Districts and categories</h2><p>Deactivate unused options rather than removing referenced records.</p></div></div>
+  <div class="table-wrap"><table><thead><tr><th>Districts</th><th>Categories</th></tr></thead><tbody><tr><td>{% for item in districts %}<div>{{ item.name }} · {{ item.active|yesno:"Active,Inactive" }} <a href="{% url 'admin_catalog_edit' 'district' item.id %}">Edit</a></div>{% endfor %}</td><td>{% for item in categories %}<div>{{ item.name }} · {{ item.active|yesno:"Active,Inactive" }} <a href="{% url 'admin_catalog_edit' 'category' item.id %}">Edit</a></div>{% endfor %}</td></tr></tbody></table></div>
+</section>
+</div>
+{% endblock %}

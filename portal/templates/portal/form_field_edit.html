@@ -1,0 +1,9 @@
+{% extends "portal/base.html" %}
+{% block title %}Configure form field | GT Certify{% endblock %}
+{% block content %}
+<section class="panel narrow-panel">
+  <p class="eyebrow">{{ setting.get_form_type_display }}</p><h1>Configure {{ setting.label }}</h1>
+  <p class="field-hint">Validation rules remain server-side; only supported character policies and length settings can be changed here.</p>
+  <form method="post" class="portal-form">{% csrf_token %}{{ form.as_p }}<div class="button-row"><button class="button button-primary" type="submit">Save settings</button><a class="button button-quiet" href="{% url 'admin_form_settings' %}">Cancel</a></div></form>
+</section>
+{% endblock %}

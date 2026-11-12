@@ -1,0 +1,9 @@
+{% extends "portal/base.html" %}
+{% block title %}Audit history | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ACCOUNTABILITY</p><h1>Audit history</h1><p>Recent approvals, edits, downloads, and configuration changes.</p></div></div>
+<section class="panel"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Action</th><th>Administrator</th><th>Submission</th><th>Details</th></tr></thead><tbody>
+  {% for event in events %}<tr><td>{{ event.created_at|date:"d M Y, H:i:s" }}</td><td><strong>{{ event.action|title }}</strong></td><td>{{ event.actor.username|default:"System" }}</td><td>{% if event.submission %}<a href="{% url 'admin_submission_detail' event.submission.submission_id %}">{{ event.submission.name }}</a>{% else %}<span class="muted">—</span>{% endif %}</td><td class="file-name">{{ event.details }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="empty-state">No audit entries yet.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

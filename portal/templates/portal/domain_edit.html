@@ -1,0 +1,8 @@
+{% extends "portal/base.html" %}
+{% block title %}Edit domain | GT Certify{% endblock %}
+{% block content %}
+<section class="panel narrow-panel">
+  <p class="eyebrow">DOMAIN MANAGEMENT</p><h1>Edit {{ domain.name }}</h1>
+  <form method="post" class="portal-form">{% csrf_token %}{{ form.as_p }}<div class="button-row"><button class="button button-primary" type="submit">Save changes</button><a class="button button-quiet" href="{% url 'admin_domains' %}">Cancel</a></div></form>
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "portal/base.html" %}
+{% block title %}{% if category_label %}{{ category_label }}{% else %}Student submissions{% endif %} | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">STUDENT RECORDS</p><h1>{% if category_label %}{{ category_label }}{% else %}Student submissions{% endif %}</h1><p>Search, filter, and review submitted student information.</p></div>
+  <span class="result-count">{{ page_obj.paginator.count }} records</span>
+</div>
+<section class="panel filter-panel">
+  <form method="get" class="filter-form">
+    <div class="field"><label for="q">Student or registration number</label><input id="q" name="q" value="{{ filters.q }}" placeholder="Search records"></div>
+    <div class="field"><label for="domain">Domain</label><select id="domain" name="domain"><option value="">All domains</option>{% for domain in domains %}<option value="{{ domain.id }}" {% if filters.domain == domain.id|stringformat:"s" %}selected{% endif %}>{{ domain.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="status">Approval status</label><select id="status" name="status"><option value="">All statuses</option>{% for value,label in statuses %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="date_from">Submitted from</label><input id="date_from" name="date_from" type="date" value="{{ filters.date_from }}"></div>
+    <div class="field"><label for="date_to">Submitted to</label><input id="date_to" name="date_to" type="date" value="{{ filters.date_to }}"></div>
+    <div class="field"><label for="sort">Sort by</label><select id="sort" name="sort">
+      <option value="-created_at" {% if filters.sort == "-created_at" %}selected{% endif %}>Newest first</option>
+      <option value="created_at" {% if filters.sort == "created_at" %}selected{% endif %}>Oldest first</option>
+      <option value="name" {% if filters.sort == "name" %}selected{% endif %}>Name A-Z</option>
+      <option value="-name" {% if filters.sort == "-name" %}selected{% endif %}>Name Z-A</option>
+      <option value="registration_number" {% if filters.sort == "registration_number" %}selected{% endif %}>Registration number</option>
+    </select></div>
+    <div class="filter-actions"><button class="button button-primary" type="submit">Apply filters</button><a class="button button-quiet" href="{% if category == 'offer' %}{% url 'admin_offer_submissions' %}{% elif category == 'experience' %}{% url 'admin_experience_submissions' %}{% elif category == 'project' %}{% url 'admin_project_submissions' %}{% elif category == 'lor' %}{% url 'admin_lor_submissions' %}{% else %}{% url 'admin_submission_list' %}{% endif %}">Clear</a></div>
+  </form>
+</section>
+<section class="panel">
+  <div class="table-wrap">
+    <table><thead><tr><th>Submission ID</th><th>Student</th><th>Gender</th><th>Registration number</th><th>Domain</th><th>Submitted</th><th>Requests</th><th></th></tr></thead>
+      <tbody>{% for submission in page_obj %}
+        <tr>
+          <td><span class="mono">{{ submission.submission_id|stringformat:"s"|slice:":8"|upper }}</span></td>
+          <td><strong>{{ submission.title }} {{ submission.name }}</strong><small class="table-subtext">{{ submission.registered_email }}</small></td>
+          <td>{{ submission.get_gender_display }}</td>
+          <td>{{ submission.registration_number }}</td>
+          <td>{{ submission.domain.name }}</td>
+          <td>{{ submission.created_at|date:"d M Y" }}</td>
+          <td><div class="status-list">{% for cert_request in submission.certificate_requests.all %}<span class="status status-{{ cert_request.status }}">{{ cert_request.get_category_display }} · {{ cert_request.get_status_display }}</span>{% endfor %}</div></td>
+          <td><a class="table-action" href="{% url 'admin_submission_detail' submission.submission_id %}">Review</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="8" class="empty-state">No submissions match these filters.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Pagination">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ filters.q|urlencode }}&domain={{ filters.domain }}&status={{ filters.status }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&sort={{ filters.sort }}">Previous</a>{% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ filters.q|urlencode }}&domain={{ filters.domain }}&status={{ filters.status }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&sort={{ filters.sort }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

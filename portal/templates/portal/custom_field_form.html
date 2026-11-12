@@ -1,0 +1,9 @@
+{% extends "portal/base.html" %}
+{% block title %}Add custom field | GT Certify{% endblock %}
+{% block content %}
+<section class="panel narrow-panel">
+  <p class="eyebrow">DYNAMIC FORMS</p><h1>Add a custom field</h1>
+  <p class="field-hint">Custom fields are saved with student submissions and can be removed without deleting stored answers.</p>
+  <form method="post" class="portal-form">{% csrf_token %}{{ form.as_p }}<div class="button-row"><button class="button button-primary" type="submit">Add field</button><a class="button button-quiet" href="{% url 'admin_form_settings' %}">Cancel</a></div></form>
+</section>
+{% endblock %}

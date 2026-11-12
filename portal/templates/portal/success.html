@@ -1,0 +1,15 @@
+{% extends "portal/base.html" %}
+{% block title %}Submission received | GT Certify{% endblock %}
+{% block content %}
+<section class="success-card">
+  <div class="success-icon" aria-hidden="true">&#10003;</div>
+  <p class="eyebrow">SUBMISSION RECEIVED</p>
+  <h1>Thank You for Your Response!</h1>
+  <p>Your information has been submitted successfully. Your certificate request will be reviewed by the Gradtwin Administration Team.</p>
+  <div class="reference-box">
+    <span>Submission reference</span>
+    <strong>GT-{{ submission.submission_id|stringformat:"s"|slice:":8"|upper }}</strong>
+  </div>
+  <a class="button button-primary" href="{% url 'landing' %}">Back to home</a>
+</section>
+{% endblock %}

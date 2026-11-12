@@ -1,0 +1,35 @@
+{% extends "portal/base.html" %}
+{% block title %}Dashboard | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">OVERVIEW</p><h1>Dashboard</h1><p>Review certificate activity across the portal.</p></div>
+  <a class="button button-primary" href="{% url 'admin_qr_management' %}">View QR codes</a>
+</div>
+<section class="stat-grid">
+  <article class="stat-card"><span>Total submissions</span><strong>{{ total_submissions }}</strong><small>All student registrations</small></article>
+  <article class="stat-card"><span>Offer Letter requests</span><strong>{{ offer_requests }}</strong><small>QR code 1</small></article>
+  <article class="stat-card"><span>Pending approvals</span><strong>{{ pending }}</strong><small>Awaiting review</small></article>
+  <article class="stat-card"><span>Approved</span><strong>{{ approved }}</strong><small>Ready for generation</small></article>
+  <article class="stat-card"><span>Generated certificates</span><strong>{{ generated }}</strong><small>Backed up securely</small></article>
+</section>
+<section class="panel">
+  <div class="section-heading"><div><h2>Certificate activity</h2><p>Requests and generated files by category.</p></div></div>
+  <div class="category-grid">
+    {% for item in certificate_counts %}
+      <a class="category-card" href="{% if item.category == 'offer' %}{% url 'admin_offer_submissions' %}{% elif item.category == 'experience' %}{% url 'admin_experience_submissions' %}{% elif item.category == 'project' %}{% url 'admin_project_submissions' %}{% else %}{% url 'admin_lor_submissions' %}{% endif %}">
+        <span>{{ item.label }}</span><strong>{{ item.count }}</strong><small>{{ item.generated }} generated</small>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+<section class="panel">
+  <div class="section-heading"><div><h2>Recent submissions</h2><p>Latest student registrations.</p></div><a href="{% url 'admin_submission_list' %}">View all</a></div>
+  <div class="table-wrap">
+    <table><thead><tr><th>Student</th><th>Registration number</th><th>Domain</th><th>Submitted</th><th></th></tr></thead>
+      <tbody>{% for submission in recent_submissions %}
+        <tr><td><strong>{{ submission.title }} {{ submission.name }}</strong></td><td>{{ submission.registration_number }}</td><td>{{ submission.domain.name }}</td><td>{{ submission.created_at|date:"d M Y, H:i" }}</td><td><a href="{% url 'admin_submission_detail' submission.submission_id %}">Review</a></td></tr>
+      {% empty %}<tr><td colspan="5" class="empty-state">No submissions yet.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

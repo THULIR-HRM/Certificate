@@ -1,0 +1,14 @@
+{% extends "portal/base.html" %}
+{% block title %}Delete submission | GT Certify{% endblock %}
+{% block content %}
+<section class="panel confirm-card">
+  <p class="eyebrow">CONFIRM ACTION</p>
+  <h1>Delete this submission?</h1>
+  <p>This will remove the student record and its pending or reviewed requests. Generated certificate files cannot be deleted here.</p>
+  <p><strong>{{ submission.title }} {{ submission.name }}</strong> · {{ submission.registration_number }}</p>
+  {% if generated_exists %}<div class="message message-error">This record has generated certificate backups and cannot be deleted.</div>{% endif %}
+  <div class="button-row"><a class="button button-quiet" href="{% url 'admin_submission_detail' submission.submission_id %}">Cancel</a>
+    {% if not generated_exists %}<form method="post">{% csrf_token %}<button class="button button-danger" type="submit" data-confirm="Delete this student submission?">Delete submission</button></form>{% endif %}
+  </div>
+</section>
+{% endblock %}

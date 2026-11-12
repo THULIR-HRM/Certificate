@@ -1,0 +1,55 @@
+{% extends "portal/base.html" %}
+{% block title %}Student record | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">SUBMISSION {{ submission.submission_id|stringformat:"s"|slice:":8"|upper }}</p><h1>{{ submission.title }} {{ submission.name }}</h1><p>Submitted {{ submission.created_at|date:"d F Y, H:i" }}</p></div>
+  <a class="button button-quiet" href="{% url 'admin_submission_list' %}">&larr; Back to submissions</a>
+</div>
+<div class="detail-grid">
+  <section class="panel">
+    <div class="section-heading"><div><h2>Student information</h2><p>Edit incorrect details before approving a certificate.</p></div></div>
+    <form method="post" class="portal-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="button button-primary" type="submit">Save student details</button>
+    </form>
+    {% if submission.custom_data %}
+      <div class="custom-data"><h3>Additional fields</h3>{% for key,value in submission.custom_data.items %}<p><strong>{{ key }}:</strong> {{ value }}</p>{% endfor %}</div>
+    {% endif %}
+    <div class="danger-zone"><div><strong>Delete submission</strong><p>Generated certificate backups prevent deletion.</p></div><a class="button button-danger-outline" href="{% url 'admin_submission_delete' submission.submission_id %}">Delete</a></div>
+  </section>
+  <section class="panel">
+    <div class="section-heading"><div><h2>Certificate requests</h2><p>Each certificate is approved separately.</p></div></div>
+    {% for cert_request in submission.certificate_requests.all %}
+      <article class="request-card">
+        <div class="request-title"><div><h3>{{ cert_request.get_category_display }}</h3><span class="status status-{{ cert_request.status }}">{{ cert_request.get_status_display }}</span></div></div>
+        {% if cert_request.rejection_reason %}<p class="field-error">Reason: {{ cert_request.rejection_reason }}</p>{% endif %}
+        {% if cert_request.status == "pending" %}
+          <form method="post" action="{% url 'admin_certificate_decision' cert_request.id %}" class="portal-form compact-form">
+            {% csrf_token %}
+            <label for="decision-{{ cert_request.id }}">Decision</label>
+            <select id="decision-{{ cert_request.id }}" name="decision"><option value="approved">Approve</option><option value="rejected">Reject</option></select>
+            <label for="reason-{{ cert_request.id }}">Rejection reason (required when rejecting)</label>
+            <input id="reason-{{ cert_request.id }}" name="rejection_reason" maxlength="500">
+            <button class="button button-primary" type="submit">Save decision</button>
+          </form>
+        {% elif cert_request.status == "approved" or cert_request.status == "generated" %}
+          <form method="post" action="{% url 'admin_generate_certificate' cert_request.id %}" class="generation-form">
+            {% csrf_token %}
+            <label>Download format<select name="format" required><option value="docx">Word (.docx)</option><option value="pdf">PDF (.pdf)</option></select></label>
+            <label>Certificate version<select name="mode" required><option value="online">Online certificate</option><option value="offline">Offline certificate</option></select></label>
+            <button class="button button-primary" type="submit">Generate and download</button>
+          </form>
+        {% endif %}
+        {% if cert_request.generated_files.all %}
+          <div class="generated-list"><h4>Generated backups</h4>
+            {% for certificate in cert_request.generated_files.all %}
+              <div class="generated-row"><span>{{ certificate.mode|title }} · {{ certificate.get_file_format_display }}<small>{{ certificate.generated_at|date:"d M Y, H:i" }}</small></span><a href="{% url 'admin_certificate_download' certificate.id %}">Download</a></div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </article>
+    {% empty %}<p class="empty-state">No certificate requests found for this submission.</p>{% endfor %}
+  </section>
+</div>
+{% endblock %}

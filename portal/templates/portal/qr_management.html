@@ -1,0 +1,15 @@
+{% extends "portal/base.html" %}
+{% block title %}QR code management | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">STUDENT ACCESS</p><h1>QR code management</h1><p>Each QR code opens a separate registration flow.</p></div></div>
+<div class="qr-grid">
+  {% for item in qr_items %}
+    <section class="panel qr-card">
+      <div><p class="eyebrow">REGISTRATION QR {{ forloop.counter|stringformat:"02d" }}</p><h2>{{ item.title }}</h2></div>
+      <div class="qr-image-wrap"><img src="{{ item.image }}" alt="QR code for {{ item.title }}" data-qr-image></div>
+      <label class="field"><span>Registration URL</span><input readonly value="{{ item.url }}" data-copy-value></label>
+      <div class="button-row"><button type="button" class="button button-outline" data-copy-button>Copy URL</button><a class="button button-primary" href="{{ item.image }}" download="gt-certify-{{ forloop.counter }}.png">Download QR</a><button type="button" class="button button-quiet" data-refresh-qr>Refresh</button></div>
+    </section>
+  {% endfor %}
+</div>
+{% endblock %}

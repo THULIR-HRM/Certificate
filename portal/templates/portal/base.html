@@ -1,0 +1,60 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="GT Certify — Smart Certificate Generation &amp; Management System">
+  <title>{% block title %}GT Certify | Smart Certificate Generation &amp; Management System{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'portal/app.css' %}">
+  <script defer src="{% static 'portal/app.js' %}"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{% url 'landing' %}" aria-label="GT Certify home">
+      <span class="brand-mark">GT</span>
+      <span><strong>GT Certify</strong><small>Smart Certificate Generation &amp; Management System</small></span>
+    </a>
+    {% if user.is_authenticated %}
+      <div class="topbar-actions">
+        <span class="admin-label">Administrator</span>
+        <form method="post" action="{% url 'admin_logout' %}">
+          {% csrf_token %}
+          <button class="button button-quiet" type="submit">Log out</button>
+        </form>
+      </div>
+    {% else %}
+      <a class="button button-quiet" href="{% url 'admin_login' %}">Admin login</a>
+    {% endif %}
+  </header>
+
+  {% if user.is_authenticated %}
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Admin navigation">
+        <p class="sidebar-caption">WORKSPACE</p>
+        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+        <a href="{% url 'admin_qr_management' %}">QR code management</a>
+        <a href="{% url 'admin_submission_list' %}">Student submissions</a>
+        <div class="sidebar-group-label">CERTIFICATES</div>
+        <a href="{% url 'admin_offer_submissions' %}">Offer Letter</a>
+        <a href="{% url 'admin_experience_submissions' %}">Experience Certificate</a>
+        <a href="{% url 'admin_project_submissions' %}">Project Completion</a>
+        <a href="{% url 'admin_lor_submissions' %}">Letter of Recommendation</a>
+        <div class="sidebar-group-label">MANAGEMENT</div>
+        <a href="{% url 'admin_templates' %}">Certificate templates</a>
+        <a href="{% url 'admin_backups' %}">Generated certificates / backup</a>
+        <a href="{% url 'admin_form_settings' %}">Form settings</a>
+        <a href="{% url 'admin_catalog' %}">Academic catalog</a>
+        <a href="{% url 'admin_domains' %}">Domain management</a>
+        <a href="{% url 'admin_settings' %}">Admin settings</a>
+        <a href="{% url 'admin_audit_log' %}">Audit history</a>
+      </aside>
+  {% endif %}
+  <main class="{% if user.is_authenticated %}main-content{% else %}public-content{% endif %}">
+    {% include "portal/messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+  {% if user.is_authenticated %}</div>{% endif %}
+</body>
+</html>

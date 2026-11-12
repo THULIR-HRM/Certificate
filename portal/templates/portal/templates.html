@@ -1,0 +1,23 @@
+{% extends "portal/base.html" %}
+{% block title %}Certificate templates | GT Certify{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ORIGINAL DOCUMENTS</p><h1>Certificate templates</h1><p>Versions are retained; uploading a replacement never overwrites an earlier template.</p></div></div>
+<div class="two-column-layout">
+  <section class="panel"><div class="section-heading"><div><h2>Upload a replacement</h2><p>Upload an editable DOCX with supported placeholders. Include a matching PDF if LibreOffice is not installed.</p></div></div>
+    <form method="post" enctype="multipart/form-data" class="portal-form">{% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}<div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>{% endfor %}
+      <button class="button button-primary" type="submit">Upload new version</button>
+    </form>
+  </section>
+  <section class="panel"><div class="section-heading"><div><h2>Template versions</h2><p>Active versions are used for generation.</p></div></div>
+    <div class="template-list">{% for template in templates %}
+      <article class="template-row"><div><strong>{{ template.get_category_display }} · v{{ template.version }}</strong><small>{{ template.original_filename }} · {{ template.created_at|date:"d M Y" }}</small></div>
+        <div class="template-actions">{% if template.active %}<span class="status status-approved">Active</span>{% else %}<span class="status status-neutral">Archived</span>{% endif %}
+          {% if template.pdf_source %}<a href="{% url 'admin_template_preview' template.id %}" target="_blank" rel="noopener">Preview PDF</a>{% endif %}
+        </div>
+      </article>
+    {% empty %}<p class="empty-state">No templates imported. Run the template import command after setup.</p>{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

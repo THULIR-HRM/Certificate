@@ -1,0 +1,117 @@
+{% extends "portal/base.html" %}
+{% block title %}{{ form_title }} | GT Certify{% endblock %}
+{% block content %}
+<div class="form-page">
+  <a class="back-link" href="{% url 'landing' %}">&larr; Back to certificate options</a>
+  <div class="form-heading">
+    <p class="eyebrow">STUDENT REGISTRATION</p>
+    <h1>{{ form_title }}</h1>
+    <p>Enter your details carefully. The administration team will review them before issuing any certificate.</p>
+  </div>
+  <form class="portal-form" method="post" data-submit-form>
+    {% csrf_token %}
+    {% for field in form %}
+      {% if field.name == "degree_department" %}
+        {{ field }}
+        <div class="field full-width" data-degree-catalog>
+          <label for="{{ form.degree_search.id_for_label }}">Degree and Department<span class="required-mark"> *</span></label>
+          {{ form.degree_search }}
+          <p class="field-hint">Search by abbreviation or full degree name, then select the qualification.</p>
+          {{ form.degree_option }}
+          {% for error in form.degree_option.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          <div data-degree-other hidden>
+            <label for="{{ form.degree_other_name.id_for_label }}">Other degree</label>
+            {{ form.degree_other_name }}
+            {% for error in form.degree_other_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+          <label for="{{ form.specialization_option.id_for_label }}">Department / Specialization</label>
+          {{ form.specialization_option }}
+          {% for error in form.specialization_option.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          <div data-specialization-other hidden>
+            <label for="{{ form.specialization_other.id_for_label }}">Other department / specialization</label>
+            {{ form.specialization_other }}
+            {% for error in form.specialization_other.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+          {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          {% if form.degree_suggestion %}
+            <div class="suggestion-box" aria-live="polite">
+              <p><strong>Suggested format:</strong> <span data-suggested-format>{{ form.degree_suggestion }}</span></p>
+              <button class="text-button" type="button" data-apply-suggestion>Apply suggestion</button>
+              <p class="field-hint">Choose a catalog option or enter a correctly formatted degree.</p>
+            </div>
+          {% endif %}
+        </div>
+      {% elif field.name == "college" %}
+        {{ field }}
+        <div class="field full-width" data-college-catalog>
+          <label for="{{ form.college_search.id_for_label }}">College Name and Location<span class="required-mark"> *</span></label>
+          <div class="catalog-filters">
+            <label>State {{ form.college_state_filter }}</label>
+            <label>District {{ form.college_district_filter }}</label>
+            <label>Category {{ form.college_category_filter }}</label>
+          </div>
+          <label class="visually-hidden" for="{{ form.college_search.id_for_label }}">Search colleges by name, city, or district</label>
+          <div class="college-picker" data-college-picker>
+            {{ form.college_search }}
+            <div class="college-results" id="college-option-list" role="listbox" hidden></div>
+          </div>
+          <details class="college-affiliation-filter">
+            <summary>Filter by university / affiliation (optional)</summary>
+            <label class="visually-hidden" for="{{ form.college_affiliation_filter.id_for_label }}">University / affiliation</label>
+            {{ form.college_affiliation_filter }}
+          </details>
+          {{ form.college_option }}
+          <p class="field-hint">Search and select a college. The selected official name and location will be used on your certificates.</p>
+          {% for error in form.college_option.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          <div data-college-other hidden>
+            <label for="{{ form.college_state.id_for_label }}">State / Union territory</label>
+            {{ form.college_state }}
+            {% for error in form.college_state.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            <label for="{{ form.college_other_name.id_for_label }}">College name</label>
+            {{ form.college_other_name }}
+            {% for error in form.college_other_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            <label for="{{ form.college_other_location.id_for_label }}">College location / city</label>
+            {{ form.college_other_location }}
+            {% for error in form.college_other_location.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+          {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      {% elif field.name == "degree_search" or field.name == "degree_option" or field.name == "degree_other_name" or field.name == "specialization_option" or field.name == "specialization_other" or field.name == "college_search" or field.name == "college_state_filter" or field.name == "college_district_filter" or field.name == "college_category_filter" or field.name == "college_affiliation_filter" or field.name == "college_option" or field.name == "college_state" or field.name == "college_other_name" or field.name == "college_other_location" %}
+        {# Rendered with the degree and college catalog controls above. #}
+      {% elif field.is_hidden %}
+        {{ field }}
+      {% elif field.name == "new_domain" %}
+        <div class="field full-width domain-add" data-domain-add>
+          <button type="button" class="button button-outline" data-domain-toggle aria-expanded="false">+ Add Domain</button>
+          <div class="domain-add-input" data-domain-input hidden>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            <p class="field-hint">Use proper capitalization, for example Artificial Intelligence.</p>
+          </div>
+        </div>
+      {% else %}
+        <div class="field {% if field.name == 'feedback' or field.name == 'domain' %}full-width{% endif %}">
+          <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required-mark"> *</span>{% endif %}</label>
+          {{ field }}
+          {% if field.help_text %}<p class="field-hint">{{ field.help_text }}</p>{% endif %}
+          {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          {% if field.name == "feedback" %}<p class="character-count"><span data-character-count>0</span> / 2000 characters</p>{% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+    {% if form.non_field_errors %}
+      <div class="form-errors full-width">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+    {% endif %}
+    <div class="form-actions full-width">
+      <button class="button button-primary button-large" type="submit" data-submit-button>
+        <span data-submit-label>Submit information</span>
+      </button>
+      <span class="field-hint">Fields marked with * are required.</span>
+    </div>
+  </form>
+</div>
+{{ degree_catalog|json_script:"degree-catalog-data" }}
+{{ specialization_catalog|json_script:"specialization-catalog-data" }}
+{{ college_catalog|json_script:"college-catalog-data" }}
+{% endblock %}
