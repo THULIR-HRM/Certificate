@@ -54,14 +54,20 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+]
+try:
+    import whitenoise  # noqa: F401
+    MIDDLEWARE.append("whitenoise.middleware.WhiteNoiseMiddleware")
+except ImportError:
+    pass
+MIDDLEWARE.extend([
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
+])
 
 ROOT_URLCONF = "config.urls"
 TEMPLATES = [
@@ -129,7 +135,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+try:
+    import whitenoise  # noqa: F401
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+except ImportError:
+    pass
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", str(BASE_DIR / "media"))).resolve()
 TEMPLATE_SOURCE_DIR = Path(
     os.environ.get("TEMPLATE_SOURCE_DIR") or str(BASE_DIR / "Certifiactes Template")

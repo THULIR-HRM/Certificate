@@ -67,6 +67,16 @@ urlpatterns = [
         views.admin_certificate_download,
         name="admin_certificate_download",
     ),
+    path(
+        "admin/certificates/<int:certificate_id>/delete/",
+        views.admin_certificate_delete,
+        name="admin_certificate_delete",
+    ),
+    path(
+        "admin/certificates/delete-multiple/",
+        views.admin_certificates_bulk_delete,
+        name="admin_certificates_bulk_delete",
+    ),
     path("admin/backups/", views.admin_backups, name="admin_backups"),
     path(
         "admin/backups/offer/",

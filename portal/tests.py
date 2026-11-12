@@ -575,6 +575,67 @@ class AdminWorkflowTests(PortalTestCase):
         self.assertTrue(AuditLog.objects.filter(action="certificate_generated").exists())
         self.assertTrue(AuditLog.objects.filter(action="certificate_downloaded").exists())
 
+    def test_admin_can_delete_certificate_backup(self):
+        user = self.create_admin()
+        self.client.force_login(user)
+        sub = self.create_submission()
+        cert_req = CertificateRequest.objects.create(
+            submission=sub,
+            category=CertificateRequest.Category.OFFER,
+            status=CertificateRequest.Status.GENERATED,
+        )
+        cert = GeneratedCertificate.objects.create(
+            request=cert_req,
+            mode=GeneratedCertificate.Mode.ONLINE,
+            file_format=GeneratedCertificate.Format.PDF,
+            file_name="test_cert.pdf",
+            content_hash="hash123",
+        )
+        cert.file.save("test_cert.pdf", ContentFile(b"test"), save=True)
+        self.assertTrue(GeneratedCertificate.objects.filter(pk=cert.pk).exists())
+
+        delete_url = reverse("admin_certificate_delete", args=[cert.pk])
+        response = self.client.post(delete_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(GeneratedCertificate.objects.filter(pk=cert.pk).exists())
+        self.assertEqual(
+            CertificateRequest.objects.get(pk=cert_req.pk).status,
+            CertificateRequest.Status.APPROVED,
+        )
+        self.assertTrue(AuditLog.objects.filter(action="certificate_deleted").exists())
+
+    def test_admin_can_bulk_delete_certificates(self):
+        user = self.create_admin()
+        self.client.force_login(user)
+        sub = self.create_submission()
+        cert_req = CertificateRequest.objects.create(
+            submission=sub,
+            category=CertificateRequest.Category.EXPERIENCE,
+            status=CertificateRequest.Status.GENERATED,
+        )
+        c1 = GeneratedCertificate.objects.create(
+            request=cert_req,
+            mode=GeneratedCertificate.Mode.ONLINE,
+            file_format=GeneratedCertificate.Format.PDF,
+            file_name="c1.pdf",
+            content_hash="h1",
+        )
+        c2 = GeneratedCertificate.objects.create(
+            request=cert_req,
+            mode=GeneratedCertificate.Mode.OFFLINE,
+            file_format=GeneratedCertificate.Format.DOCX,
+            file_name="c2.docx",
+            content_hash="h2",
+        )
+        bulk_url = reverse("admin_certificates_bulk_delete")
+        response = self.client.post(bulk_url, {"selected_certificates": [c1.pk, c2.pk]})
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(GeneratedCertificate.objects.filter(pk__in=[c1.pk, c2.pk]).exists())
+        self.assertEqual(
+            CertificateRequest.objects.get(pk=cert_req.pk).status,
+            CertificateRequest.Status.APPROVED,
+        )
+
     def test_rejection_requires_a_reason_and_records_decision(self):
         user = self.create_admin()
         self.client.force_login(user)

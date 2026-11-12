@@ -663,6 +663,95 @@ def admin_certificate_download(request, certificate_id):
     )
 
 
+def _delete_single_certificate(request, certificate):
+    parent_request = certificate.request
+    sub = parent_request.submission
+    file_name = certificate.file_name
+
+    # 1. Permanently delete associated file from storage
+    if certificate.file:
+        try:
+            certificate.file.delete(save=False)
+        except Exception:
+            pass
+
+    # 2. Record audit log
+    _audit(
+        request,
+        "certificate_deleted",
+        submission=sub,
+        certificate_request=parent_request,
+        details={
+            "certificate_id": certificate.pk,
+            "file_name": file_name,
+            "mode": certificate.mode,
+            "format": certificate.file_format,
+        },
+    )
+
+    # 3. Permanently delete database record (cascades download records)
+    certificate.delete()
+
+    # 4. Update parent request status if no remaining generated backups exist
+    if not parent_request.generated_files.exists():
+        if parent_request.status == CertificateRequest.Status.GENERATED:
+            parent_request.status = CertificateRequest.Status.APPROVED
+            parent_request.save(update_fields=["status", "updated_at"])
+
+
+@require_POST
+@portal_admin_required
+def admin_certificate_delete(request, certificate_id):
+    certificate = get_object_or_404(
+        GeneratedCertificate.objects.select_related("request__submission"),
+        pk=certificate_id,
+    )
+    redirect_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or reverse("admin_backups")
+    try:
+        with transaction.atomic():
+            _delete_single_certificate(request, certificate)
+        messages.success(request, "The certificate was permanently deleted.")
+    except Exception as error:
+        messages.error(request, f"Error deleting certificate: {error}")
+    return redirect(redirect_url)
+
+
+@require_POST
+@portal_admin_required
+def admin_certificates_bulk_delete(request):
+    redirect_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or reverse("admin_backups")
+    cert_ids = request.POST.getlist("selected_certificates")
+    if not cert_ids:
+        raw_ids = request.POST.get("certificate_ids_csv", "")
+        if raw_ids:
+            cert_ids = [i.strip() for i in raw_ids.split(",") if i.strip().isdigit()]
+
+    if not cert_ids:
+        messages.error(request, "No certificates were selected for deletion.")
+        return redirect(redirect_url)
+
+    try:
+        with transaction.atomic():
+            certificates = list(
+                GeneratedCertificate.objects.filter(pk__in=cert_ids).select_related(
+                    "request__submission"
+                )
+            )
+            count = len(certificates)
+            if count == 0:
+                messages.error(request, "No matching certificates were found to delete.")
+                return redirect(redirect_url)
+
+            for cert in certificates:
+                _delete_single_certificate(request, cert)
+
+        messages.success(request, f"Successfully permanently deleted {count} certificate(s).")
+    except Exception as error:
+        messages.error(request, f"Error deleting certificates: {error}")
+
+    return redirect(redirect_url)
+
+
 @portal_admin_required
 def admin_backups(request, category=None):
     certificates = GeneratedCertificate.objects.select_related(
