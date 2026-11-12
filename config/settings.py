@@ -22,15 +22,22 @@ ALLOWED_HOSTS = [
     for host in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
     if host.strip()
 ]
-# Allow Railway's auto-generated *.up.railway.app domains automatically
+# Allow Railway domains automatically
+for h in [".up.railway.app", ".railway.app"]:
+    if h not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(h)
 _railway_host = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
 if _railway_host and _railway_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_railway_host)
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+for o in ["https://*.up.railway.app", "https://*.railway.app"]:
+    if o not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(o)
 if _railway_host:
     _railway_origin = f"https://{_railway_host}"
     if _railway_origin not in CSRF_TRUSTED_ORIGINS:
@@ -143,6 +150,9 @@ CSRF_COOKIE_SECURE = not DEBUG
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
